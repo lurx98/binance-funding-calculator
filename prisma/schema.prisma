@@ -1,0 +1,41 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "./generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model FundingRateHistory {
+  id                    Int      @id @default(autoincrement())
+  symbol                String   @db.VarChar(20)
+  calcTime              BigInt   @map("calc_time")
+  fundingIntervalHours  Int      @map("funding_interval_hours")
+  lastFundingRate       Decimal  @map("last_funding_rate") @db.Decimal(18, 8)
+  markPrice             Decimal  @map("mark_price") @db.Decimal(18, 8)
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  @@unique([symbol, calcTime])
+  @@index([symbol, calcTime(sort: Desc)])
+  @@index([calcTime(sort: Desc)])
+  @@map("funding_rate_history")
+}
+
+model QueryHistory {
+  id           Int      @id @default(autoincrement())
+  symbol       String   @db.VarChar(20)
+  inputType    String   @map("input_type") @db.VarChar(10)
+  inputValue   Decimal  @map("input_value") @db.Decimal(18, 8)
+  startDate    DateTime @map("start_date") @db.Date
+  totalProfit  Decimal? @map("total_profit") @db.Decimal(18, 8)
+  totalRecords Int?     @map("total_records")
+  queryTime    DateTime @default(now()) @map("query_time")
+
+  @@index([queryTime(sort: Desc)])
+  @@index([symbol])
+  @@map("query_history")
+}
