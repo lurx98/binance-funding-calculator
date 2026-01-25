@@ -55,57 +55,55 @@ export default function StatsDisplay({ data, loading }: StatsDisplayProps) {
   return (
     <div className="space-y-6">
       {/* 汇总信息卡片 */}
-      <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-xl shadow-lg p-6 text-white">
-        <h2 className="text-lg font-semibold mb-4">汇总信息</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-          <div className="bg-white/20 rounded-lg p-4">
-            <p className="text-yellow-100 text-sm">初始仓位</p>
-            <p className="text-2xl font-bold">
-              {summary.quantity.toFixed(4)}
+      <div className="space-y-3">
+        <h2 className="text-lg font-semibold text-gray-800">汇总信息</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="bg-white/70 backdrop-blur-md rounded-lg shadow-md border border-blue-100/50 p-4 hover:shadow-lg hover:bg-white/80 transition-all">
+            <p className="text-blue-600 text-xs font-medium mb-2">初始仓位</p>
+            <p className="text-lg md:text-xl font-bold text-gray-800">
+              {summary.quantity.toFixed(2)}
             </p>
           </div>
-          <div className="bg-white/20 rounded-lg p-4">
-            <p className="text-yellow-100 text-sm">初始价格</p>
-            <p className="text-2xl font-bold">
-              {summary.initialPrice.toFixed(4)}
-              <span className="text-sm ml-1">USDT</span>
+          <div className="bg-white/70 backdrop-blur-md rounded-lg shadow-md border border-blue-100/50 p-4 hover:shadow-lg hover:bg-white/80 transition-all">
+            <p className="text-blue-600 text-xs font-medium mb-2">初始价格</p>
+            <p className="text-lg md:text-xl font-bold text-gray-800">
+              {summary.initialPrice.toFixed(2)}
+              <span className="text-xs ml-1 text-gray-500">USDT</span>
             </p>
           </div>
-          <div className="bg-white/20 rounded-lg p-4">
-            <p className="text-yellow-100 text-sm">初始金额</p>
-            <p className="text-2xl font-bold">
+          <div className="bg-white/70 backdrop-blur-md rounded-lg shadow-md border border-blue-100/50 p-4 hover:shadow-lg hover:bg-white/80 transition-all">
+            <p className="text-blue-600 text-xs font-medium mb-2">初始金额</p>
+            <p className="text-lg md:text-xl font-bold text-gray-800">
               {summary.initialValue.toFixed(2)}
-              <span className="text-sm ml-1">USDT</span>
+              <span className="text-xs ml-1 text-gray-500">USDT</span>
             </p>
           </div>
-          <div className="bg-white/20 rounded-lg p-4">
-            <p className="text-yellow-100 text-sm">收益率</p>
-            <p className={`text-2xl font-bold ${summary.totalProfit >= 0 ? 'text-white' : 'text-red-200'}`}>
+          <div className="bg-white/70 backdrop-blur-md rounded-lg shadow-md border border-blue-100/50 p-4 hover:shadow-lg hover:bg-white/80 transition-all">
+            <p className="text-blue-600 text-xs font-medium mb-2">收益率</p>
+            <p className={`text-lg md:text-xl font-bold ${summary.totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {summary.initialValue > 0 ? ((summary.totalProfit / summary.initialValue) * 100).toFixed(2) : '0.00'}%
             </p>
           </div>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white/20 rounded-lg p-4">
-            <p className="text-yellow-100 text-sm">总收益</p>
-            <p className={`text-2xl font-bold ${summary.totalProfit >= 0 ? 'text-white' : 'text-red-200'}`}>
-              {summary.totalProfit >= 0 ? '+' : ''}{summary.totalProfit.toFixed(4)}
-              <span className="text-sm ml-1">USDT</span>
+          <div className="bg-white/70 backdrop-blur-md rounded-lg shadow-md border border-blue-100/50 p-4 hover:shadow-lg hover:bg-white/80 transition-all">
+            <p className="text-blue-600 text-xs font-medium mb-2">总收益</p>
+            <p className={`text-lg md:text-xl font-bold ${summary.totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {summary.totalProfit >= 0 ? '+' : ''}{summary.totalProfit.toFixed(2)}
+              <span className="text-xs ml-1 text-gray-500">USDT</span>
             </p>
           </div>
-          <div className="bg-white/20 rounded-lg p-4">
-            <p className="text-yellow-100 text-sm">数据条数</p>
-            <p className="text-2xl font-bold">{summary.totalRecords}</p>
+          <div className="bg-white/70 backdrop-blur-md rounded-lg shadow-md border border-blue-100/50 p-4 hover:shadow-lg hover:bg-white/80 transition-all">
+            <p className="text-blue-600 text-xs font-medium mb-2">数据条数</p>
+            <p className="text-lg md:text-xl font-bold text-gray-800">{summary.totalRecords}</p>
           </div>
-          <div className="bg-white/20 rounded-lg p-4">
-            <p className="text-yellow-100 text-sm">统计天数</p>
-            <p className="text-2xl font-bold">{summary.dayCount}</p>
+          <div className="bg-white/70 backdrop-blur-md rounded-lg shadow-md border border-blue-100/50 p-4 hover:shadow-lg hover:bg-white/80 transition-all">
+            <p className="text-blue-600 text-xs font-medium mb-2">统计天数</p>
+            <p className="text-lg md:text-xl font-bold text-gray-800">{summary.dayCount}</p>
           </div>
-          <div className="bg-white/20 rounded-lg p-4">
-            <p className="text-yellow-100 text-sm">日均收益</p>
-            <p className={`text-2xl font-bold ${summary.avgDailyProfit >= 0 ? 'text-white' : 'text-red-200'}`}>
-              {summary.avgDailyProfit >= 0 ? '+' : ''}{summary.avgDailyProfit.toFixed(4)}
-              <span className="text-sm ml-1">USDT</span>
+          <div className="bg-white/70 backdrop-blur-md rounded-lg shadow-md border border-blue-100/50 p-4 hover:shadow-lg hover:bg-white/80 transition-all">
+            <p className="text-blue-600 text-xs font-medium mb-2">日均收益</p>
+            <p className={`text-lg md:text-xl font-bold ${summary.avgDailyProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {summary.avgDailyProfit >= 0 ? '+' : ''}{summary.avgDailyProfit.toFixed(2)}
+              <span className="text-xs ml-1 text-gray-500">USDT</span>
             </p>
           </div>
         </div>

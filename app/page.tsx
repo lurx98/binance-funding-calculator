@@ -86,14 +86,14 @@ export default function Home() {
         <StatsDisplay data={result} loading={loading} />
 
         {/* 数据来源信息 */}
-        {meta && result && (
+        {/* {meta && result && (
           <div className="mt-6 text-center text-sm text-gray-500">
             <p>
               数据来源: {meta.fromCache ? '数据库缓存' : '币安 API'} |
               数据条数: {meta.dataCount}
             </p>
           </div>
-        )}
+        )} */}
       </main>
 
       {/* 页脚 */}
