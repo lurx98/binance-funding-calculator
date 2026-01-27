@@ -135,7 +135,6 @@ export default function InputForm({ onSubmit, loading }: InputFormProps) {
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            max={format(new Date(), 'yyyy-MM-dd')}
             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
           />
         </div>
