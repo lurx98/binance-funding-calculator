@@ -1,7 +1,9 @@
 'use client';
 
+import React, { useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { DailyStats, MonthlyStats, YearlyStats, SummaryData } from '@/lib/types';
+import { format } from 'date-fns';
 
 interface StatsDisplayProps {
   data: {
@@ -14,6 +16,19 @@ interface StatsDisplayProps {
 }
 
 export default function StatsDisplay({ data, loading }: StatsDisplayProps) {
+  const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
+
+  const toggleExpand = (date: string) => {
+    setExpandedDates(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(date)) {
+        newSet.delete(date);
+      } else {
+        newSet.add(date);
+      }
+      return newSet;
+    });
+  };
   if (loading) {
     return (
       <div className="bg-white rounded-xl shadow-sm border p-8">
@@ -143,25 +158,79 @@ export default function StatsDisplay({ data, loading }: StatsDisplayProps) {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50 sticky top-0">
               <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-10"></th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">日期</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">收益 (USDT)</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">结算次数</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">首条价格</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">0点价格</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">平均费率</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {daily.map((day) => (
-                <tr key={day.date} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{day.date}</td>
-                  <td className={`px-4 py-3 whitespace-nowrap text-sm font-semibold ${day.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {day.profit >= 0 ? '+' : ''}{day.profit.toFixed(4)}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{day.count}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{day.firstPrice.toFixed(4)}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{(day.avgFundingRate * 100).toFixed(4)}%</td>
-                </tr>
-              ))}
+              {daily.map((day) => {
+                const isExpanded = expandedDates.has(day.date);
+                return (
+                  <React.Fragment key={day.date}>
+                    <tr className="hover:bg-gray-50">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm">
+                        <button
+                          onClick={() => toggleExpand(day.date)}
+                          className="text-gray-400 hover:text-gray-600 transition-colors"
+                          aria-label={isExpanded ? '收起' : '展开'}
+                        >
+                          <svg
+                            className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{day.date}</td>
+                      <td className={`px-4 py-3 whitespace-nowrap text-sm font-semibold ${day.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {day.profit >= 0 ? '+' : ''}{day.profit.toFixed(4)}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{day.count}</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{day.firstPrice.toFixed(4)}</td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{(day.avgFundingRate * 100).toFixed(4)}%</td>
+                    </tr>
+                    {isExpanded && (
+                      <tr key={`${day.date}-details`}>
+                        <td colSpan={6} className="px-4 py-2 bg-gray-50">
+                          <div className="overflow-x-auto">
+                            <table className="min-w-full text-xs">
+                              <thead className="bg-gray-100">
+                                <tr>
+                                  <th className="px-3 py-2 text-left font-medium text-gray-600">时间</th>
+                                  <th className="px-3 py-2 text-left font-medium text-gray-600">标记价格</th>
+                                  <th className="px-3 py-2 text-left font-medium text-gray-600">资金费率</th>
+                                  <th className="px-3 py-2 text-left font-medium text-gray-600">收益 (USDT)</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-gray-200">
+                                {day.details.map((detail, idx) => (
+                                  <tr key={idx} className="hover:bg-gray-100">
+                                    <td className="px-3 py-2 text-gray-700">
+                                      {format(new Date(detail.calcTime), 'yyyy-MM-dd HH:mm:ss')}
+                                    </td>
+                                    <td className="px-3 py-2 text-gray-700">{detail.markPrice.toFixed(4)}</td>
+                                    <td className="px-3 py-2 text-gray-700">{(detail.fundingRate * 100).toFixed(4)}%</td>
+                                    <td className={`px-3 py-2 font-medium ${detail.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                      {detail.profit >= 0 ? '+' : ''}{detail.profit.toFixed(4)}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                );
+              })}
             </tbody>
           </table>
         </div>

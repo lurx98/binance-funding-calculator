@@ -13,6 +13,14 @@ export interface BinanceFundingRateItem {
   markPrice: string;
 }
 
+// 单条详细记录
+export interface DetailRecord {
+  calcTime: number;
+  markPrice: number;
+  fundingRate: number;
+  profit: number;
+}
+
 // 日统计
 export interface DailyStats {
   date: string;
@@ -20,6 +28,7 @@ export interface DailyStats {
   count: number;
   firstPrice: number;
   avgFundingRate: number;
+  details: DetailRecord[];  // 当天的详细记录
 }
 
 // 月统计

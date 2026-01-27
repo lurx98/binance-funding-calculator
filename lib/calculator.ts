@@ -1,4 +1,4 @@
-import { BinanceFundingRateItem, DailyStats, MonthlyStats, YearlyStats, CalculateResult } from './types';
+import { BinanceFundingRateItem, DailyStats, MonthlyStats, YearlyStats, CalculateResult, DetailRecord } from './types';
 import { format } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 
@@ -71,6 +71,7 @@ function calculateProfits(
     profits: number[];
     prices: number[];
     fundingRates: number[];
+    details: DetailRecord[];
   }>();
 
   // 计算每条数据的收益
@@ -85,6 +86,7 @@ function calculateProfits(
         profits: [],
         prices: [],
         fundingRates: [],
+        details: [],
       });
     }
 
@@ -92,6 +94,12 @@ function calculateProfits(
     dayData.profits.push(profit);
     dayData.prices.push(markPrice);
     dayData.fundingRates.push(fundingRate);
+    dayData.details.push({
+      calcTime: item.calcTime,
+      markPrice,
+      fundingRate,
+      profit,
+    });
   }
 
   // 生成日统计
@@ -104,12 +112,16 @@ function calculateProfits(
     // firstPrice 应该是当天最早的价格
     const firstPrice = dayData.prices[dayData.prices.length - 1];
 
+    // 详细记录按时间降序排列（最新的在前面）
+    const details = dayData.details.sort((a, b) => b.calcTime - a.calcTime);
+
     daily.push({
       date,
       profit: totalProfit,
       count: dayData.profits.length,
       firstPrice,
       avgFundingRate,
+      details,
     });
   }
 
