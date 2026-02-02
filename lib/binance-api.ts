@@ -12,17 +12,14 @@ const dispatcher = proxyUrl ? new ProxyAgent(proxyUrl) : undefined;
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 /**
- * 将日期转换为北京时间 00:00:00 的时间戳
- * 用户输入的日期应该被视为北京时间
+ * 将日期字符串转换为北京时间 00:00:00 的 UTC 时间戳
+ * @param dateString 日期字符串，格式为 YYYY-MM-DD，表示北京时间的日期
  */
-export function toBeijingStartOfDay(date: Date): number {
-  // 获取日期字符串 YYYY-MM-DD
-  const year = date.getUTCFullYear();
-  const month = date.getUTCMonth();
-  const day = date.getUTCDate();
+export function toBeijingStartOfDay(dateString: string): number {
+  // 解析日期字符串为北京时间的 00:00:00
   // 北京时间 00:00:00 = UTC 前一天 16:00:00 (UTC+8)
-  // 创建北京时间当天 00:00:00 对应的 UTC 时间
-  return Date.UTC(year, month, day) - 8 * 60 * 60 * 1000;
+  const [year, month, day] = dateString.split('-').map(Number);
+  return Date.UTC(year, month - 1, day) - 8 * 60 * 60 * 1000;
 }
 
 /**
@@ -61,7 +58,7 @@ export async function fetchBinanceFundingRate(
  */
 export async function fetchAllFundingRateData(
   symbol: string,
-  startDate: Date
+  startDate: string
 ): Promise<BinanceFundingRateItem[]> {
   let page = 1;
   const allData: BinanceFundingRateItem[] = [];
@@ -69,7 +66,7 @@ export async function fetchAllFundingRateData(
   // 使用北京时间的起始时间
   const startTime = toBeijingStartOfDay(startDate);
 
-  console.log(`开始获取 ${symbol} 从 ${new Date(startTime).toISOString()} (北京时间 ${startDate.toISOString().slice(0, 10)} 00:00) 的资金费率数据...`);
+  console.log(`开始获取 ${symbol} 从 ${new Date(startTime).toISOString()} (北京时间 ${startDate} 00:00) 的资金费率数据...`);
 
   while (hasMore) {
     try {
@@ -174,7 +171,7 @@ export async function saveFundingRateData(data: BinanceFundingRateItem[]): Promi
  */
 export async function getFundingRateFromDB(
   symbol: string,
-  startDate: Date
+  startDate: string
 ): Promise<BinanceFundingRateItem[]> {
   // 使用北京时间的起始时间
   const startTime = BigInt(toBeijingStartOfDay(startDate));

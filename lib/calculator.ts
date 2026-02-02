@@ -108,9 +108,23 @@ function calculateProfits(
     const totalProfit = dayData.profits.reduce((sum, p) => sum + p, 0);
     const avgFundingRate = dayData.fundingRates.reduce((sum, r) => sum + r, 0) / dayData.fundingRates.length;
 
-    // 数据是按时间降序排列的，所以当天最后一条是最早的数据
-    // firstPrice 应该是当天最早的价格
-    const firstPrice = dayData.prices[dayData.prices.length - 1];
+    // 找到最接近当天北京时间 00:00:00 的数据作为 firstPrice
+    const [year, month, day] = date.split('-').map(Number);
+    const dayStartTime = Date.UTC(year, month - 1, day) - 8 * 60 * 60 * 1000; // 北京时间 00:00:00
+
+    // 找到时间戳最接近 00:00:00 的数据
+    let closestDetail = dayData.details[0];
+    let minDiff = Math.abs(closestDetail.calcTime - dayStartTime);
+
+    for (const detail of dayData.details) {
+      const diff = Math.abs(detail.calcTime - dayStartTime);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closestDetail = detail;
+      }
+    }
+
+    const firstPrice = closestDetail.markPrice;
 
     // 详细记录按时间降序排列（最新的在前面）
     const details = dayData.details.sort((a, b) => b.calcTime - a.calcTime);

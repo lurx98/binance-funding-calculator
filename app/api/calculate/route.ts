@@ -23,10 +23,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const startDateObj = new Date(startDate);
-    if (isNaN(startDateObj.getTime())) {
+    // 验证日期格式 (YYYY-MM-DD)
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(startDate)) {
       return NextResponse.json(
-        { success: false, error: '日期格式错误' },
+        { success: false, error: '日期格式错误，应为 YYYY-MM-DD' },
         { status: 400 }
       );
     }
@@ -34,11 +34,11 @@ export async function POST(request: NextRequest) {
     console.log('收到计算请求:', { symbol, inputType, inputValue, startDate });
 
     // 1. 先尝试从数据库获取数据
-    let fundingRateData = await getFundingRateFromDB(symbol, startDateObj);
+    let fundingRateData = await getFundingRateFromDB(symbol, startDate);
     let fromCache = true;
 
     // 2. 检查数据库数据是否覆盖了请求的起始日期
-    const startTime = toBeijingStartOfDay(startDateObj);
+    const startTime = toBeijingStartOfDay(startDate);
     let needFetchMore = false;
 
     if (fundingRateData.length === 0) {
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     // 3. 如果需要获取更多数据，从币安 API 获取
     if (needFetchMore) {
       fromCache = false;
-      const apiData = await fetchAllFundingRateData(symbol, startDateObj);
+      const apiData = await fetchAllFundingRateData(symbol, startDate);
 
       // 保存到数据库
       if (apiData.length > 0) {
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
           symbol,
           inputType,
           inputValue: inputValue.toString(),
-          startDate: startDateObj,
+          startDate: new Date(startDate + 'T00:00:00+08:00'), // 北京时间
           totalProfit: result.summary.totalProfit.toString(),
           totalRecords: result.summary.totalRecords,
         },

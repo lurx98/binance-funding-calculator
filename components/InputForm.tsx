@@ -35,8 +35,8 @@ interface InputFormProps {
 
 export default function InputForm({ onSubmit, loading }: InputFormProps) {
   const [symbol, setSymbol] = useState('XAGUSDT');
-  const [inputType, setInputType] = useState<'quantity' | 'amount'>('quantity');
-  const [inputValue, setInputValue] = useState('1000');
+  const [inputType, setInputType] = useState<'quantity' | 'amount'>('amount');
+  const [inputValue, setInputValue] = useState('10000');
   const [startDate, setStartDate] = useState(format(subDays(new Date(), 30), 'yyyy-MM-dd'));
 
   const handleSubmit = (e: React.FormEvent) => {
