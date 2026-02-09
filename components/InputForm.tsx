@@ -1,18 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { format, subDays } from 'date-fns';
-
-const COMMON_SYMBOLS = [
-  'BTCUSDT',
-  'ETHUSDT',
-  'BNBUSDT',
-  'SOLUSDT',
-  'XRPUSDT',
-  'ADAUSDT',
-  'DOGEUSDT',
-  'XAGUSDT',
-];
 
 const DATE_PRESETS = [
   { label: '最近 7 天', days: 7 },
@@ -38,6 +27,62 @@ export default function InputForm({ onSubmit, loading }: InputFormProps) {
   const [inputType, setInputType] = useState<'quantity' | 'amount'>('amount');
   const [inputValue, setInputValue] = useState('10000');
   const [startDate, setStartDate] = useState(format(subDays(new Date(), 30), 'yyyy-MM-dd'));
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [filteredSymbols, setFilteredSymbols] = useState<string[]>([]);
+  const [allSymbols, setAllSymbols] = useState<string[]>([]);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
+
+  // 获取所有币种列表
+  useEffect(() => {
+    const fetchSymbols = async () => {
+      try {
+        const response = await fetch('https://www.binance.com/bapi/futures/v1/public/future/common/get-funding-info');
+        const data = await response.json();
+        if (data.success && data.data) {
+          const symbols = data.data.map((item: { symbol: string }) => item.symbol);
+          setAllSymbols(symbols);
+        }
+      } catch (error) {
+        console.error('Failed to fetch symbols:', error);
+      }
+    };
+    fetchSymbols();
+  }, []);
+
+  // 处理输入框变化，显示建议列表
+  const handleSymbolChange = (value: string) => {
+    setSymbol(value.toUpperCase());
+
+    if (value.trim() === '') {
+      setFilteredSymbols([]);
+      setShowSuggestions(false);
+    } else {
+      // 过滤币种
+      const filtered = allSymbols.filter(s =>
+        s.includes(value.toUpperCase())
+      );
+      setFilteredSymbols(filtered);
+      setShowSuggestions(filtered.length > 0);
+    }
+  };
+
+  // 选择建议中的币种
+  const handleSelectSuggestion = (selectedSymbol: string) => {
+    setSymbol(selectedSymbol);
+    setShowSuggestions(false);
+  };
+
+  // 点击外部关闭建议列表
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,21 +107,37 @@ export default function InputForm({ onSubmit, loading }: InputFormProps) {
     <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border p-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* 交易对选择 */}
-        <div>
+        <div className="relative overflow-visible" ref={suggestionsRef}>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             交易对
           </label>
-          <select
+          <input
+            type="text"
             value={symbol}
-            onChange={(e) => setSymbol(e.target.value)}
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 bg-white"
-          >
-            {COMMON_SYMBOLS.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
+            onChange={(e) => handleSymbolChange(e.target.value)}
+            onFocus={() => {
+              setFilteredSymbols(allSymbols);
+              setShowSuggestions(allSymbols.length > 0);
+            }}
+            placeholder="输入交易对，如 BTCUSDT"
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+          />
+
+          {/* 建议列表 */}
+          {showSuggestions && filteredSymbols.length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+              {filteredSymbols.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => handleSelectSuggestion(s)}
+                  className="w-full text-left px-4 py-2 hover:bg-yellow-50 transition-colors text-sm"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* 输入方式 */}
