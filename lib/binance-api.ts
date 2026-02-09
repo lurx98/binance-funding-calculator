@@ -171,18 +171,34 @@ export async function saveFundingRateData(data: BinanceFundingRateItem[]): Promi
  */
 export async function getFundingRateFromDB(
   symbol: string,
-  startDate: string
+  startDate: string,
+  endDate?: string
 ): Promise<BinanceFundingRateItem[]> {
   // 使用北京时间的起始时间
   const startTime = BigInt(toBeijingStartOfDay(startDate));
 
-  const records = await prisma.fundingRateHistory.findMany({
-    where: {
-      symbol,
-      calcTime: {
-        gte: startTime,
-      },
+  // 如果提供了结束日期，使用结束日期的次日 00:00 作为上限
+  // 否则不设置上限
+  let endTime: BigInt | undefined;
+  if (endDate) {
+    const [year, month, day] = endDate.split('-').map(Number);
+    // 结束日期的次日 00:00 的 UTC 时间戳
+    endTime = BigInt(Date.UTC(year, month - 1, day + 1) - 8 * 60 * 60 * 1000);
+  }
+
+  const where: any = {
+    symbol,
+    calcTime: {
+      gte: startTime,
     },
+  };
+
+  if (endTime) {
+    where.calcTime.lt = endTime;
+  }
+
+  const records = await prisma.fundingRateHistory.findMany({
+    where,
     orderBy: {
       calcTime: 'desc',
     },
