@@ -10,7 +10,6 @@ interface ApiResponse {
   success: boolean;
   data?: CalculateResult;
   error?: string;
-  fromCache?: boolean;
   dataCount?: number;
 }
 
@@ -18,13 +17,10 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<CalculateResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [meta, setMeta] = useState<{ fromCache: boolean; dataCount: number } | null>(null);
-
   const handleSubmit = async (formData: FormData) => {
     setLoading(true);
     setError(null);
     setResult(null);
-    setMeta(null);
 
     try {
       const response = await fetch('/api/calculate', {
@@ -39,10 +35,6 @@ export default function Home() {
 
       if (data.success && data.data) {
         setResult(data.data);
-        setMeta({
-          fromCache: data.fromCache ?? false,
-          dataCount: data.dataCount ?? 0,
-        });
       } else {
         setError(data.error || '计算失败');
       }
@@ -84,16 +76,6 @@ export default function Home() {
 
         {/* 统计结果展示 */}
         <StatsDisplay data={result} loading={loading} />
-
-        {/* 数据来源信息 */}
-        {/* {meta && result && (
-          <div className="mt-6 text-center text-sm text-gray-500">
-            <p>
-              数据来源: {meta.fromCache ? '数据库缓存' : '币安 API'} |
-              数据条数: {meta.dataCount}
-            </p>
-          </div>
-        )} */}
       </main>
 
       {/* 页脚 */}
